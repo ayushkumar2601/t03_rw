@@ -6,6 +6,7 @@ from app.core.logging import logger
 
 _embedding_instance = None
 
+
 def get_embedding_model() -> Embeddings:
     """
     Initialize and return the embedding model.
@@ -18,11 +19,13 @@ def get_embedding_model() -> Embeddings:
         try:
             _embedding_instance = HuggingFaceEmbeddings(
                 model_name=model_name,
-                model_kwargs={'device': 'cpu'}, # Use CPU by default for broader compatibility
-                encode_kwargs={'normalize_embeddings': True}
+                model_kwargs={
+                    "device": "cpu"
+                },  # Use CPU by default for broader compatibility
+                encode_kwargs={"normalize_embeddings": True},
             )
         except Exception as e:
             logger.error(f"Failed to load embedding model {model_name}: {e}")
             raise RuntimeError(f"Embedding model initialization failed: {e}") from e
-            
+
     return _embedding_instance

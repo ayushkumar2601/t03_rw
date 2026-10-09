@@ -1,5 +1,4 @@
 import os
-import shutil
 from typing import List, Optional, Tuple
 
 from langchain_chroma import Chroma
@@ -11,7 +10,9 @@ from app.services.embeddings import get_embedding_model
 
 
 class VectorStore:
-    def __init__(self, persist_dir: Optional[str] = None, collection_name: Optional[str] = None):
+    def __init__(
+        self, persist_dir: Optional[str] = None, collection_name: Optional[str] = None
+    ):
         self.persist_dir = persist_dir or settings.chroma_persist_directory
         self.collection_name = collection_name or settings.chroma_collection_name
         self.embedding_model = get_embedding_model()
@@ -26,14 +27,14 @@ class VectorStore:
                 collection_name=self.collection_name,
                 embedding_function=self.embedding_model,
                 persist_directory=self.persist_dir,
-                collection_metadata={
-                    "embedding_model": settings.embedding_model
-                }
+                collection_metadata={"embedding_model": settings.embedding_model},
             )
             # Verify compatibility
             actual_model = self.db._collection.metadata.get("embedding_model")
             if actual_model and actual_model != settings.embedding_model:
-                logger.error(f"Collection uses incompatible embedding model: {actual_model}")
+                logger.error(
+                    f"Collection uses incompatible embedding model: {actual_model}"
+                )
                 raise ValueError(
                     f"Incompatible embedding model in collection. Expected {settings.embedding_model}, found {actual_model}."
                 )
@@ -59,7 +60,9 @@ class VectorStore:
         ids_to_delete = self.get_by_document_id(document_id)
         if ids_to_delete:
             self.db.delete(ids=ids_to_delete)
-            logger.info(f"Deleted {len(ids_to_delete)} old chunks for document {document_id}")
+            logger.info(
+                f"Deleted {len(ids_to_delete)} old chunks for document {document_id}"
+            )
 
     def upsert_chunks(self, chunks: List[Document], document_id: str) -> int:
         """
@@ -68,21 +71,21 @@ class VectorStore:
         """
         if not chunks:
             return 0
-            
+
         self.delete_by_document_id(document_id)
-        
+
         ids = [chunk.metadata["chunk_id"] for chunk in chunks]
         self.db.add_documents(documents=chunks, ids=ids)
         return len(chunks)
 
     def search(self, query: str, k: int = 5) -> List[Tuple[Document, float]]:
         """
-        Perform similarity search. 
+        Perform similarity search.
         Returns chunks and their distance scores.
         """
         if not self.db:
             return []
-        
+
         # similarity_search_with_score returns lower score for better matches (distance)
         results = self.db.similarity_search_with_score(query, k=k)
         return results

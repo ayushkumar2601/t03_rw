@@ -18,12 +18,13 @@ def setup_logging() -> logging.Logger:
         )
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-        
+
         # Suppress noisy logs from third-party libraries
         logging.getLogger("httpx").setLevel(logging.WARNING)
         logging.getLogger("chromadb").setLevel(logging.WARNING)
         logging.getLogger("sentence_transformers").setLevel(logging.WARNING)
-    
+
     return logger
+
 
 logger = setup_logging()

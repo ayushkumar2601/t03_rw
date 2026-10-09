@@ -1,17 +1,21 @@
-# Company Knowledge Base RAG Chatbot (Phase 1)
+# Company Knowledge Base RAG Chatbot
 
-This project implements Phase 1 of the Company Knowledge Base RAG Chatbot. 
-In this phase, we have established the foundational data ingestion and vector storage pipeline.
+This project implements a Retrieval-Augmented Generation (RAG) Chatbot built with FastAPI, LangChain, ChromaDB, and Groq. 
+It ingests a company knowledge base PDF and answers user questions strictly based on the extracted context, explicitly avoiding hallucination from pretrained knowledge.
 
-## Architecture Overview (Phase 1)
-- **Document Loading**: `PyPDFLoader` is used to parse the company knowledge base PDF and extract text with page metadata.
-- **Text Processing**: Basic normalization is applied to preserve paragraph structures, followed by recursive chunk splitting via `RecursiveCharacterTextSplitter`.
-- **Embeddings**: `HuggingFaceEmbeddings` utilizing `sentence-transformers/all-MiniLM-L6-v2`. (The model will be downloaded locally upon first run).
-- **Vector Storage**: `Chroma` database persists embeddings locally into a specific directory, supporting idempotent updates based on content hashes.
+## Architecture
+
+- **Ingestion**: Extracted using `PyPDFLoader` and split into meaningful chunks with `RecursiveCharacterTextSplitter`.
+- **Embeddings**: `sentence-transformers/all-MiniLM-L6-v2` executed locally for performance, consistency, and cost-efficiency.
+- **Vector Storage**: Persistent `ChromaDB`. Maintains deterministic document and chunk IDs to allow idempotent upserts.
+- **RAG Orchestration**: Built-in query grounding and rigorous citation validation. Validates LLM citations against available context and forces abstention if ungrounded.
+- **Generation**: Powered by Groq LLM API (`llama-3.3-70b-versatile`) with structured Pydantic outputs ensuring well-formed JSON responses.
+- **API**: FastAPI web application.
 
 ## Prerequisites
+
 - Python 3.11
-- Virtual environment
+- A [Groq API Key](https://console.groq.com/keys)
 
 ## Setup
 
@@ -23,53 +27,60 @@ In this phase, we have established the foundational data ingestion and vector st
    ```
 
 2. **Configuration**:
-   Copy the example environment variables:
+   Copy `.env.example` to `.env` and fill in your variables:
    ```bash
    cp .env.example .env
    ```
-   You can adjust values in `.env` like chunk size or database paths as needed.
+   **IMPORTANT**: You must add your `GROQ_API_KEY` to the `.env` file for Phase 2 API queries to succeed.
 
 3. **PDF Placement**:
-   Place the provided company knowledge base PDF into the expected directory:
-   ```bash
-   mkdir -p data/source
-   # Move your PDF to data/source/knowledge_base.pdf
-   ```
+   Place your company knowledge base PDF at:
+   `data/source/knowledge_base.pdf`
 
 ## Usage
 
-### Ingestion Command
+### 1. Ingestion
 
-To run the pipeline and ingest the PDF:
-
+To parse, chunk, and index the PDF:
 ```bash
 python -m scripts.ingest
 ```
+Use `--rebuild` if you want to explicitly wipe the database and start fresh.
 
-This process will:
-1. Validate the PDF.
-2. Extract text and page metadata.
-3. Split the text into meaningful overlapping chunks.
-4. Generate embeddings (the embedding model is loaded locally).
-5. Upsert the chunks into ChromaDB (idempotent, won't duplicate on rerun).
-6. Verify indexing with a smoke test.
+### 2. Starting the API
 
-To completely rebuild the collection (delete all previous embeddings and start fresh):
-
+Run the FastAPI server:
 ```bash
-python -m scripts.ingest --rebuild
+uvicorn app.main:app --reload
 ```
+Access the Swagger UI Documentation at: http://127.0.0.1:8000/docs
+
+### API Endpoints
+
+**Chat**
+`POST /chat`
+```json
+{
+  "question": "What is the company's refund policy?"
+}
+```
+*Returns either a grounded answer with valid `sources` or an `insufficient_evidence` abstention if the PDF does not contain the answer.*
+
+**Health**
+`GET /health`
+*Returns process liveness.*
+
+**Readiness**
+`GET /ready`
+*Confirms if the ChromaDB vector store is populated and ready for queries.*
 
 ## Testing
-
-Run tests to verify ingestion and vector store mechanics (does not require external APIs or internet access after deps are installed):
-
+Run the comprehensive suite (doesn't require a real Groq Key):
 ```bash
 pytest
 ```
 
-## Current Limitations (Phase 1)
-- This phase focuses solely on data ingestion and vector storage.
-- The FastAPI endpoints and Groq LLM integration (Phase 2) are not yet implemented.
-- The `knowledge_base.pdf` provided for the assignment must contain extractable text (OCR is not supported yet).
-- Embedding models run on the CPU by default for maximum compatibility across machines.
+## Known Limitations
+- OCR for scanned PDFs is not supported.
+- LLM generation relies on Groq; network timeouts or rate limits will return HTTP 502.
+- Vector search relevance uses standard L2 distance. A strict similarity threshold is configured via `RETRIEVAL_MIN_RELEVANCE`, but defaults to `0.0` (off) until empirically calibrated for the specific document.
