@@ -1,0 +1,138 @@
+[
+  {
+    "id": "Q001",
+    "question": "Who is the founder of Agarwal Constructions?",
+    "expected_behavior": "answer",
+    "expected_answer": "Rajesh Agarwal",
+    "supporting_pages": [17],
+    "type": "answerable"
+  },
+  {
+    "id": "Q002",
+    "question": "In what year was Agarwal Constructions founded?",
+    "expected_behavior": "answer",
+    "expected_answer": "1995",
+    "supporting_pages": [17],
+    "type": "answerable"
+  },
+  {
+    "id": "Q003",
+    "question": "What was the initial investment amount used to start the company?",
+    "expected_behavior": "answer",
+    "expected_answer": "₹60,000",
+    "supporting_pages": [17],
+    "type": "answerable"
+  },
+  {
+    "id": "Q004",
+    "question": "What is the head office address of Agarwal Constructions?",
+    "expected_behavior": "answer",
+    "expected_answer": "Central Tower, 277 BB Ganguly Street, Kolkata – 700012",
+    "supporting_pages": [89],
+    "type": "answerable"
+  },
+  {
+    "id": "Q005",
+    "question": "What is the contact phone number for Agarwal Constructions?",
+    "expected_behavior": "answer",
+    "expected_answer": "+91 9674973514",
+    "supporting_pages": [89],
+    "type": "answerable"
+  },
+  {
+    "id": "Q006",
+    "question": "What is the company's vision regarding expansion?",
+    "expected_behavior": "answer",
+    "expected_answer": "To scale beyond Eastern India and become a pan-India commercial infrastructure development company.",
+    "supporting_pages": [16],
+    "type": "answerable"
+  },
+  {
+    "id": "Q007",
+    "question": "Does the company develop large-scale infrastructure?",
+    "expected_behavior": "answer",
+    "expected_answer": "Yes, they are a development company delivering complex, large-scale developments.",
+    "supporting_pages": [7],
+    "type": "answerable"
+  },
+  {
+    "id": "Q008",
+    "question": "Where is the company's main headquarters located?",
+    "expected_behavior": "answer",
+    "expected_answer": "Kolkata",
+    "supporting_pages": [89],
+    "type": "paraphrased"
+  },
+  {
+    "id": "Q009",
+    "question": "Who started the company in 1995 with just 60,000 rupees?",
+    "expected_behavior": "answer",
+    "expected_answer": "Rajesh Agarwal",
+    "supporting_pages": [17],
+    "type": "multi-passage"
+  },
+  {
+    "id": "Q010",
+    "question": "Is the phone number +91 9674973514 associated with the head office?",
+    "expected_behavior": "answer",
+    "expected_answer": "Yes",
+    "supporting_pages": [89],
+    "type": "distinguishing-facts"
+  },
+  {
+    "id": "Q011",
+    "question": "Can I contact the head office via email? What is the email address?",
+    "expected_behavior": "answer",
+    "expected_answer": "agarwalconstructio",
+    "supporting_pages": [89],
+    "type": "multi-passage"
+  },
+  {
+    "id": "Q012",
+    "question": "How did Rajesh Agarwal build the legacy in 1995?",
+    "expected_behavior": "answer",
+    "expected_answer": "He founded the company with a vision rooted in honesty.",
+    "supporting_pages": [17],
+    "type": "multi-passage"
+  },
+  {
+    "id": "Q013",
+    "question": "What is the detailed revenue of the company for the year 2023?",
+    "expected_behavior": "abstain",
+    "expected_answer": null,
+    "supporting_pages": [],
+    "type": "unanswerable"
+  },
+  {
+    "id": "Q014",
+    "question": "Who is the current CEO of Agarwal Constructions?",
+    "expected_behavior": "abstain",
+    "expected_answer": null,
+    "supporting_pages": [],
+    "type": "unanswerable"
+  },
+  {
+    "id": "Q015",
+    "question": "What is the company's official 30-day refund policy?",
+    "expected_behavior": "abstain",
+    "expected_answer": null,
+    "supporting_pages": [],
+    "type": "unanswerable"
+  },
+  {
+    "id": "Q016",
+    "question": "How many employees currently work at Agarwal Constructions?",
+    "expected_behavior": "abstain",
+    "expected_answer": null,
+    "supporting_pages": [],
+    "type": "unanswerable"
+  },
+  {
+    "id": "Q017",
+    "question": "What awards did the company win in 2018?",
+    "expected_behavior": "abstain",
+    "expected_answer": null,
+    "supporting_pages": [],
+    "type": "unanswerable"
+  }
+]

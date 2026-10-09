@@ -74,13 +74,43 @@ Access the Swagger UI Documentation at: http://127.0.0.1:8000/docs
 `GET /ready`
 *Confirms if the ChromaDB vector store is populated and ready for queries.*
 
-## Testing
-Run the comprehensive suite (doesn't require a real Groq Key):
+## Testing and Evaluation
+
+Run the comprehensive unit test suite (does not require a real Groq Key):
 ```bash
 pytest
 ```
+
+To run the RAG end-to-end evaluation script over the provided dataset:
+```bash
+python -m evaluation.run_evaluation
+```
+**Evaluation Methodology:** 
+The evaluation relies on a verified dataset (`evaluation/questions.json`) built directly from the `Agarwal Constructions` PDF. It tests Answerable (fact-retrieval), Unanswerable (abstention enforcement), Paraphrased, and Multi-passage inference questions. The pipeline strictly evaluates Retrieval Recall@k, Citation Accuracy, and the Groundedness of the LLM output. 
+*Note: Due to API key boundaries, full LLM generation accuracy tests are marked as PENDING until you insert your `GROQ_API_KEY`.*
 
 ## Known Limitations
 - OCR for scanned PDFs is not supported.
 - LLM generation relies on Groq; network timeouts or rate limits will return HTTP 502.
 - Vector search relevance uses standard L2 distance. A strict similarity threshold is configured via `RETRIEVAL_MIN_RELEVANCE`, but defaults to `0.0` (off) until empirically calibrated for the specific document.
+
+## Troubleshooting
+- **Missing Knowledge Base (HTTP 503)**: Ensure you've run the ingestion script. The `ChromaDB` directory must be fully populated.
+- **Upstream Provider Error (HTTP 502)**: Verify your `GROQ_API_KEY` is correct, well-funded, and you are not exceeding rate limits.
+- **Empty Responses**: Check if `RETRIEVAL_MIN_RELEVANCE` is set too strictly (low).
+
+## Security Notes
+- **Never commit `.env`!** Ensure it remains ignored by `.gitignore`. 
+- Ensure that the generated DB caches (`chroma_db`) remain untracked to prevent leaking proprietary document snippets.
+
+## Demo Plan (3-5 Minutes)
+1. Show the `data/source/knowledge_base.pdf` location.
+2. Run `python -m scripts.ingest --rebuild` to show fresh ingestion speed and logging.
+3. Start the server with `uvicorn app.main:app --reload`.
+4. Open the Swagger UI at `http://localhost:8000/docs`.
+5. Submit an answerable question: *"What is the head office address?"* -> Show the grounded JSON citation and chunk mapping.
+6. Submit an unanswerable question: *"What was the revenue in 2023?"* -> Show the graceful `insufficient_evidence` fallback and empty citation array.
+7. Run the test suite `pytest` to demonstrate 100% pass rates across 27+ tests.
+
+## License
+MIT License
