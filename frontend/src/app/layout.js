@@ -1,24 +1,34 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "block",
+  axes: ["opsz"],
+  variable: "--font-inter",
 });
 
 export const metadata = {
   title: "Agarwal Constructions — Knowledge Base AI",
-  description: "Accurate, grounded RAG chatbot powered by local Ollama and verified document citations.",
+  description: "Ask anything about Agarwal Constructions. Verified answers grounded in our company documentation.",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={inter.variable}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if(window.matchMedia('(prefers-reduced-motion: no-preference)').matches){document.documentElement.classList.add('anim');}`,
+          }}
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

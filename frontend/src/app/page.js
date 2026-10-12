@@ -2,612 +2,543 @@
 
 import { useEffect, useRef, useState } from "react";
 
-const SUGGESTIONS = [
-  {
-    tag: "Founder",
-    title: "Who is the founder of Agarwal Constructions?",
-    desc: "Leadership & early beginnings",
-  },
-  {
-    tag: "Head Office",
-    title: "What is the head office address and phone number?",
-    desc: "Official Kolkata HQ contact details",
-  },
-  {
-    tag: "Founding Year",
-    title: "In what year was the company established and with what capital?",
-    desc: "1995 genesis & investment",
-  },
-  {
-    tag: "Contact Email",
-    title: "Can I contact the company by email? What is the email address?",
-    desc: "Official inquiries & correspondence",
-  },
-  {
-    tag: "Vision",
-    title: "What is the company's vision for future expansion?",
-    desc: "Tripura & pan-India scale",
-  },
-  {
-    tag: "Safety Check",
-    title: "What is the return and refund policy for commercial leases?",
-    desc: "Tests verifiable abstention guardrail",
-  },
-];
-
-function renderFormattedContent(content) {
-  if (!content) return null;
-
-  // Clean any vertical single-word line breaks if present
-  const lines = content
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
-  let cleaned = content;
-  if (lines.length > 4) {
-    const avgWords =
-      lines.reduce((acc, l) => acc + l.split(/\s+/).length, 0) / lines.length;
-    if (avgWords < 2.5) {
-      cleaned = lines.join(" ");
-    }
-  }
-
-  // Split into paragraphs by double newlines
-  const paragraphs = cleaned.split(/\n\s*\n/).filter((p) => p.trim());
-  if (paragraphs.length <= 1) {
-    return <p className="bubble-paragraph">{cleaned}</p>;
-  }
-
-  return paragraphs.map((para, pIdx) => (
-    <p key={pIdx} className="bubble-paragraph">
-      {para}
-    </p>
-  ));
-}
-
-export default function ChatPage() {
+export default function FastshotLanding() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [inputVal, setInputVal] = useState("");
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [backendStatus, setBackendStatus] = useState({
-    ready: false,
-    checking: true,
-    provider: "ollama",
-    model: "llama3",
-    chunks: 194,
-    error: null,
-  });
-  const [expandedSources, setExpandedSources] = useState({});
-  const [copiedId, setCopiedId] = useState(null);
+  const [expandedSourceIndex, setExpandedSourceIndex] = useState(null);
+  const chatEndRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const messagesEndRef = useRef(null);
-  const textareaRef = useRef(null);
-
-  // Check backend readiness on initial mount
   useEffect(() => {
-    async function checkReadiness() {
-      try {
-        // Try through Next.js proxy first, fallback to direct
-        let res;
-        try {
-          res = await fetch("/api/backend/ready");
-        } catch {
-          res = await fetch("http://127.0.0.1:8000/ready");
-        }
-
-        if (res.ok) {
-          const data = await res.json();
-          setBackendStatus({
-            ready: data.status === "ready",
-            checking: false,
-            provider: data.llm_provider || "ollama",
-            model: data.llm_model || "llama3",
-            chunks: data.indexed_chunks || 194,
-            error: null,
-          });
-        } else {
-          setBackendStatus((prev) => ({
-            ...prev,
-            ready: false,
-            checking: false,
-            error: "Backend responded with non-200 status",
-          }));
-        }
-      } catch (err) {
-        setBackendStatus((prev) => ({
-          ...prev,
-          ready: false,
-          checking: false,
-          error: err.message || "Failed to reach backend",
-        }));
-      }
-    }
-
-    checkReadiness();
-    const interval = setInterval(checkReadiness, 15000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Auto-scroll to bottom of messages
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
-
-  // Adjust textarea height dynamically
-  const handleInputChange = (e) => {
-    setInput(e.target.value);
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(
-        textareaRef.current.scrollHeight,
-        140
-      )}px`;
-    }
-  };
-
-  const toggleSources = (msgId) => {
-    setExpandedSources((prev) => ({
-      ...prev,
-      [msgId]: !prev[msgId],
-    }));
-  };
-
-  const copyToClipboard = (text, id) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const handleSend = async (questionToSend) => {
-    const question = (questionToSend || input).trim();
-    if (!question || isLoading) return;
-
-    const userMessageId = `user_${Date.now()}`;
-    const userMessage = {
-      id: userMessageId,
-      role: "user",
-      content: question,
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+    const cleanup = () => {
+      document.documentElement.classList.remove("anim");
     };
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-    }
-    setIsLoading(true);
+    const timer = setTimeout(cleanup, 2600);
+    return () => clearTimeout(timer);
+  }, []);
 
-    const assistantMessageId = `ai_${Date.now()}`;
+  useEffect(() => {
+    if (isExpanded) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isLoading, isExpanded]);
+
+  const handleSend = async (queryText) => {
+    const q = (queryText !== undefined ? queryText : inputVal).trim();
+    if (!q || isLoading) return;
+
+    setInputVal("");
+    if (!isExpanded) {
+      setIsExpanded(true);
+    }
+
+    const userMsgId = Date.now();
+    const assistantMsgId = userMsgId + 1;
+
+    setMessages((prev) => [
+      ...prev,
+      { id: userMsgId, sender: "user", text: q },
+      { id: assistantMsgId, sender: "assistant", text: "", isLoading: true },
+    ]);
+    setIsLoading(true);
 
     try {
       let res;
       try {
-        res = await fetch("/api/backend/chat", {
+        res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
+          body: JSON.stringify({ question: q }),
         });
       } catch {
         res = await fetch("http://127.0.0.1:8000/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question }),
+          body: JSON.stringify({ question: q }),
         });
       }
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.detail || `Server error (${res.status}): Please check backend service.`
-        );
-      }
-
       const data = await res.json();
+      const answerText =
+        data.answer || data.detail || "No response received from the knowledge base.";
+      const sources = data.sources || [];
 
-      const aiMessage = {
-        id: assistantMessageId,
-        role: "assistant",
-        content: data.answer,
-        status: data.status,
-        sources: data.sources || [],
-        retrieval: data.retrieval || { chunks_retrieved: 0, chunks_used: 0 },
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-
-      // Automatically expand sources if citations exist
-      if (data.sources && data.sources.length > 0) {
-        setExpandedSources((prev) => ({ ...prev, [assistantMessageId]: true }));
-      }
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsgId
+            ? {
+                ...msg,
+                text: answerText,
+                sources: sources,
+                isLoading: false,
+              }
+            : msg
+        )
+      );
     } catch (err) {
-      const errorMessage = {
-        id: assistantMessageId,
-        role: "assistant",
-        content: `Error: ${err.message}. Ensure the FastAPI server is running with 'uvicorn main:app --reload'.`,
-        status: "error",
-        sources: [],
-        retrieval: { chunks_retrieved: 0, chunks_used: 0 },
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMsgId
+            ? {
+                ...msg,
+                text: "Error communicating with the knowledge base service: " + err.message,
+                isLoading: false,
+              }
+            : msg
+        )
+      );
     } finally {
       setIsLoading(false);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const clearChat = () => {
-    if (messages.length === 0) return;
-    if (window.confirm("Are you sure you want to clear the conversation?")) {
-      setMessages([]);
-      setExpandedSources({});
-    }
+  const handleReset = () => {
+    setIsExpanded(false);
+    setMessages([]);
+    setInputVal("");
+    setIsLoading(false);
   };
 
   return (
-    <div className="app-layout">
-      {/* Header */}
-      <header className="app-header">
-        <div className="brand-section">
-          <div className="brand-icon-wrapper" aria-hidden="true">
+    <div className="stage">
+      <video
+        className="stage-video"
+        autoPlay
+        muted
+        loop
+        playsInline
+        src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_124724_bc041163-d651-425f-aea3-2acc1efc2c96.mp4"
+      />
+
+      <div className="frame">
+        <input type="checkbox" id="menu" />
+
+        <header className="nav">
+          <a
+            href="#"
+            className="brand"
+            aria-label="Agarwal Constructions Home"
+            onClick={(e) => {
+              e.preventDefault();
+              handleReset();
+            }}
+          >
+            <svg className="brand-mark" viewBox="0 0 34 34">
+              <circle cx="17" cy="17" r="17" fill="#9C86CE" />
+              <circle cx="17" cy="17" r="8.6" fill="#FFFFFF" />
+              <circle cx="17" cy="17" r="3.7" fill="#151519" />
+            </svg>
+            <span className="brand-text">Agarwal Constructions</span>
+          </a>
+
+          <nav className="links">
+            <a href="#" className="nav-link nav-link-1">
+              Company Profile
+            </a>
+            <a href="#" className="nav-link nav-link-2">
+              Knowledge Base
+            </a>
+            <a href="#" className="nav-link nav-link-3">
+              RAG Architecture
+            </a>
+            <a href="#" className="nav-link nav-link-4">
+              API Docs
+            </a>
+          </nav>
+
+          <a
+            href="#"
+            className="cta"
+            onClick={(e) => {
+              e.preventDefault();
+              handleSend("Give me an overview of Agarwal Constructions.");
+            }}
+          >
+            <span>Live RAG</span>
+          </a>
+
+          <label htmlFor="menu" className="burger" aria-label="Toggle menu">
             <svg
+              viewBox="0 0 17 12"
               fill="none"
               stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              strokeWidth="1.8"
+              strokeLinecap="round"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-              />
+              <line x1="0" y1="2" x2="17" y2="2" />
+              <line x1="0" y1="10" x2="17" y2="10" />
             </svg>
-          </div>
-          <div className="brand-info">
-            <h1>Agarwal Constructions RAG AI</h1>
-            <p>Verified Knowledge Base Assistant • Zero Hallucination</p>
-          </div>
-        </div>
+          </label>
+        </header>
 
-        <div className="header-status-area">
-          <div
-            className="status-indicator"
-            title={
-              backendStatus.error ||
-              `Provider: ${backendStatus.provider} | Model: ${backendStatus.model}`
-            }
-          >
-            <span
-              className={`pulse-dot ${
-                backendStatus.ready ? "" : "error"
-              }`}
-            />
-            <span>
-              {backendStatus.checking
-                ? "Checking Backend..."
-                : backendStatus.ready
-                ? `${backendStatus.provider.toUpperCase()} (${backendStatus.model}) • ${
-                    backendStatus.chunks
-                  } Chunks`
-                : "Backend Offline"}
-            </span>
-          </div>
-
-          {messages.length > 0 && (
-            <button
-              onClick={clearChat}
-              className="btn-header-action"
-              title="Clear conversation"
-            >
-              <svg
-                width="14"
-                height="14"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+        <div className="sheet">
+          <div className="sheet-inner">
+            <div className="sheet-panel">
+              <a href="#" className="sheet-link">
+                Company Profile
+              </a>
+              <a href="#" className="sheet-link">
+                Knowledge Base
+              </a>
+              <a href="#" className="sheet-link">
+                RAG Architecture
+              </a>
+              <a href="#" className="sheet-link">
+                API Docs
+              </a>
+              <a
+                href="#"
+                className="sheet-cta"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleSend("Give me an overview of Agarwal Constructions.");
+                }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-              <span>Clear</span>
-            </button>
-          )}
+                Live RAG
+              </a>
+            </div>
+          </div>
         </div>
-      </header>
 
-      {/* Main Chat Viewport */}
-      <main className="chat-viewport">
-        {messages.length === 0 ? (
-          <section className="welcome-hero">
-            <div className="welcome-badge">
-              <span>✦</span> Verified Knowledge Base RAG
-            </div>
-            <h2>What would you like to know about the company?</h2>
-            <p>
-              Ask questions directly against the company knowledge base PDF.
-              Every answer is verified against retrieved chunks with exact page
-              citations.
-            </p>
+        <main className={`hero ${isExpanded ? "has-expanded" : ""}`}>
+          <h1 className="h1">
+            {isExpanded
+              ? "Agarwal Constructions Knowledge Assistant"
+              : "Ask anything about Agarwal Constructions."}
+          </h1>
 
-            <div className="suggestions-grid">
-              {SUGGESTIONS.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSend(item.title)}
-                  className="suggestion-card"
-                >
-                  <div className="suggestion-card-header">
-                    <span>•</span>
-                    <span>{item.tag}</span>
-                  </div>
-                  <div className="suggestion-card-query">{item.title}</div>
-                </button>
-              ))}
-            </div>
-          </section>
-        ) : (
-          messages.map((msg) => (
-            <div key={msg.id} className={`message-row ${msg.role}`}>
-              <div className={`avatar-badge ${msg.role}`}>
-                {msg.role === "assistant" ? "AI" : "You"}
+          {!isExpanded ? (
+            /* COLLAPSED INITIAL COMPOSER CARD (DESKTOP ABSOLUTE COORDINATES) */
+            <form
+              className="card"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
+            >
+              <div className="ph-input-wrap">
+                <input
+                  type="text"
+                  className="ph-input"
+                  placeholder="Ask about company founder, history, projects, contact, or policies..."
+                  value={inputVal}
+                  onChange={(e) => setInputVal(e.target.value)}
+                  autoFocus
+                />
               </div>
 
-              <div className="message-bubble-wrapper">
-                <div className="message-bubble">
-                  {renderFormattedContent(msg.content)}
+              <div className="tools">
+                <div className="chips">
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() =>
+                      handleSend("Who is the founder of Agarwal Constructions?")
+                    }
+                  >
+                    <svg
+                      className="chip-icon"
+                      style={{ width: "calc(14 * var(--u))", height: "auto" }}
+                      viewBox="0 0 16 13"
+                      fill="currentColor"
+                    >
+                      <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v7A1.5 1.5 0 0 1 13.5 11H9.2v1.2h1.6a.6.6 0 0 1 0 1.2H5.2a.6.6 0 0 1 0-1.2h1.6V11H2.5A1.5 1.5 0 0 1 1 9.5v-7z" />
+                    </svg>
+                    <span>Founder &amp; History</span>
+                  </button>
 
-                  {msg.role === "assistant" && (
-                    <div className="response-meta-bar">
-                      {msg.status === "answered" && (
-                        <span className="meta-status-pill answered">
-                          <svg
-                            width="12"
-                            height="12"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2.5"
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                          Grounded with Citations
-                        </span>
-                      )}
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() =>
+                      handleSend(
+                        "In what year was Agarwal Constructions founded and what was the initial vision?"
+                      )
+                    }
+                  >
+                    <svg
+                      className="chip-icon"
+                      style={{ width: "calc(11 * var(--u))", height: "auto" }}
+                      viewBox="0 0 24 36"
+                      fill="currentColor"
+                    >
+                      <path d="M0 6C0 2.686 2.686 0 6 0h6v12H6C2.686 12 0 9.314 0 6z" />
+                      <path d="M12 0h6c3.314 0 6 2.686 6 6s-2.686 6-6 6h-6V0z" />
+                      <path d="M0 18c0-3.314 2.686-6 6-6h6v12H6c-3.314 0-6-2.686-6-6z" />
+                      <path d="M12 18a6 6 0 1 0 12 0 6 6 0 0 0-12 0z" />
+                      <path d="M0 30c0-3.314 2.686-6 6-6h6v6a6 6 0 0 1-6 6c-3.314 0-6-2.686-6-6z" />
+                    </svg>
+                    <span>Founded in 1995</span>
+                  </button>
 
-                      {msg.status === "insufficient_evidence" && (
-                        <span className="meta-status-pill abstain">
-                          <svg
-                            width="12"
-                            height="12"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2.5"
-                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                            />
-                          </svg>
-                          Abstained (No Evidence)
-                        </span>
-                      )}
+                  <button
+                    type="button"
+                    className="chip"
+                    onClick={() =>
+                      handleSend(
+                        "What is the head office address and contact email for Agarwal Constructions?"
+                      )
+                    }
+                  >
+                    <svg
+                      className="chip-icon"
+                      style={{ width: "calc(11.5 * var(--u))", height: "auto" }}
+                      viewBox="0 0 14 14"
+                      fill="currentColor"
+                    >
+                      <path d="M7 0C7 3.866 10.134 7 14 7C10.134 7 7 10.134 7 14C7 10.134 3.866 7 0 7C3.866 7 7 3.866 7 0Z" />
+                    </svg>
+                    <span>Head Office &amp; Contact</span>
+                  </button>
+                </div>
 
-                      {msg.retrieval && (
-                        <span className="meta-retrieval-pill">
-                          Retrieved: {msg.retrieval.chunks_retrieved} chunks •{" "}
-                          Used: {msg.retrieval.chunks_used}
-                        </span>
-                      )}
+                <div className="right">
+                  <button type="button" className="model">
+                    <span>Llama 3 (Ollama)</span>
+                    <svg
+                      className="model-chev"
+                      viewBox="0 0 7 4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M1 1l2.5 2.5L6 1" />
+                    </svg>
+                  </button>
 
-                      <button
-                        onClick={() => copyToClipboard(msg.content, msg.id)}
-                        className="btn-copy-answer"
-                        title="Copy answer"
-                      >
-                        {copiedId === msg.id ? (
-                          <>
-                            <svg
-                              width="12"
-                              height="12"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                            <span>Copied</span>
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              width="12"
-                              height="12"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                              />
-                            </svg>
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  )}
+                  <button type="button" className="attach" aria-label="Attach document">
+                    <svg
+                      className="attach-icon"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M15.172 7L8.1 14.071a3.5 3.5 0 0 1-4.95-4.95l7.072-7.07a2.333 2.333 0 0 1 3.3 3.3L6.45 12.422a1.167 1.167 0 0 1-1.65-1.65l6.364-6.364" />
+                    </svg>
+                  </button>
 
-                  {/* Sources Accordion */}
-                  {msg.sources && msg.sources.length > 0 && (
-                    <div className="sources-container">
-                      <button
-                        onClick={() => toggleSources(msg.id)}
-                        className="sources-toggle-btn"
-                      >
+                  <button
+                    type="submit"
+                    className="send"
+                    aria-label="Search Knowledge Base"
+                  >
+                    <svg className="send-arrow" viewBox="0 0 12 14" fill="#ffffff">
+                      <path d="M6 1.2a.8.8 0 0 0-.57.24L1.24 5.63a.8.8 0 1 0 1.13 1.13L5.2 3.93V12.8a.8.8 0 1 0 1.6 0V3.93l2.83 2.83a.8.8 0 0 0 1.13-1.13L6.57 1.44A.8.8 0 0 0 6 1.2z" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </form>
+          ) : (
+            /* EXPANDED CHAT BOX (PERSISTENT SIZE & UI FOR ALL SUBSEQUENT PROMPTS) */
+            <div className="card expanded">
+              <div className="chat-topbar">
+                <div className="chat-meta">
+                  <div className="chat-orb" />
+                  <div className="chat-title-group">
+                    <span className="chat-title">
+                      Agarwal Constructions Knowledge Base
+                    </span>
+                    <span className="chat-badge">
+                      Grounded Vector Retrieval · Local Ollama Llama 3
+                    </span>
+                  </div>
+                </div>
+                <div className="chat-actions">
+                  <button
+                    type="button"
+                    className="btn-reset"
+                    onClick={handleReset}
+                    title="Start a new conversation"
+                  >
+                    + New Query
+                  </button>
+                </div>
+              </div>
+
+              <div className="chat-thread">
+                {messages.map((m, idx) => {
+                  if (m.sender === "user") {
+                    return (
+                      <div key={m.id || idx} className="msg-user-row">
+                        <div className="msg-user-bubble">{m.text}</div>
                         <svg
-                          width="12"
-                          height="12"
+                          className="user-avatar-icon"
+                          viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          style={{
-                            transform: expandedSources[msg.id]
-                              ? "rotate(180deg)"
-                              : "none",
-                            transition: "transform 0.2s",
-                          }}
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 9l-7 7-7-7"
-                          />
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                          <circle cx="12" cy="7" r="4" />
                         </svg>
-                        <span>
-                          {expandedSources[msg.id] ? "Hide" : "View"}{" "}
-                          {msg.sources.length} Verified Document{" "}
-                          {msg.sources.length === 1 ? "Source" : "Sources"}
-                        </span>
-                      </button>
+                      </div>
+                    );
+                  }
 
-                      {expandedSources[msg.id] && (
-                        <div className="source-cards-list">
-                          {msg.sources.map((src, sIdx) => (
-                            <div key={sIdx} className="source-card">
-                              <div className="source-card-header">
-                                <span className="source-page-badge">
-                                  📄 Page {src.page || "N/A"}
-                                </span>
-                                <span className="source-chunk-id">
-                                  {src.chunk_id}
-                                </span>
+                  return (
+                    <div key={m.id || idx} className="msg-assistant-row">
+                      <div className="assistant-orb" />
+                      <div className="msg-assistant-bubble">
+                        {m.isLoading ? (
+                          <div className="typing-dots">
+                            <span className="dot" />
+                            <span className="dot" />
+                            <span className="dot" />
+                          </div>
+                        ) : (
+                          <>
+                            <div>{m.text}</div>
+                            {m.sources && m.sources.length > 0 && (
+                              <div className="sources-container">
+                                {m.sources.map((s, sIdx) => (
+                                  <button
+                                    key={sIdx}
+                                    type="button"
+                                    className="source-badge"
+                                    onClick={() =>
+                                      setExpandedSourceIndex(
+                                        expandedSourceIndex === `${idx}-${sIdx}`
+                                          ? null
+                                          : `${idx}-${sIdx}`
+                                      )
+                                    }
+                                  >
+                                    <span>📄 Page {s.page}</span>
+                                    {s.chunk_id && (
+                                      <span style={{ opacity: 0.65 }}>
+                                        · {s.chunk_id}
+                                      </span>
+                                    )}
+                                  </button>
+                                ))}
                               </div>
-                              <div className="source-excerpt">
-                                &quot;{src.excerpt}&quot;
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                            )}
+                            {expandedSourceIndex &&
+                              expandedSourceIndex.startsWith(`${idx}-`) && (
+                                <div
+                                  style={{
+                                    marginTop: "8px",
+                                    padding: "8px 12px",
+                                    borderRadius: "8px",
+                                    background: "rgba(0,0,0,0.35)",
+                                    fontSize: "12px",
+                                    color: "#cbd5e1",
+                                    lineHeight: 1.4,
+                                    border: "1px solid rgba(255,255,255,0.08)",
+                                  }}
+                                >
+                                  <strong>Excerpt from source:</strong>
+                                  <p style={{ marginTop: "4px" }}>
+                                    {
+                                      m.sources[
+                                        parseInt(
+                                          expandedSourceIndex.split("-")[1],
+                                          10
+                                        )
+                                      ]?.excerpt
+                                    }
+                                  </p>
+                                </div>
+                              )}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
+                  );
+                })}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* BOTTOM INPUT BAR (WHITE PILL DESIGN MATCHING ATTACHED SCREENSHOT) */}
+              <div className="chat-input-bar-container">
+                <form
+                  className="chat-input-pill"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSend();
+                  }}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    className="pill-text-input"
+                    placeholder="Ask anything about Agarwal Constructions..."
+                    value={inputVal}
+                    onChange={(e) => setInputVal(e.target.value)}
+                    disabled={isLoading}
+                    autoFocus
+                  />
+
+                  <button
+                    type="button"
+                    className="pill-mic-btn"
+                    title="Voice input"
+                    onClick={() => {
+                      if (!inputVal) {
+                        setInputVal(
+                          "Who is the current CEO and management team of Agarwal Constructions?"
+                        );
+                      }
+                    }}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                      <line x1="12" y1="19" x2="12" y2="23" />
+                      <line x1="8" y1="23" x2="16" y2="23" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="pill-send-btn"
+                    aria-label="Send query"
+                    disabled={isLoading}
+                  >
+                    <svg
+                      className="pill-send-arrow"
+                      viewBox="0 0 12 14"
+                      fill="currentColor"
+                    >
+                      <path d="M6 1.2a.8.8 0 0 0-.57.24L1.24 5.63a.8.8 0 1 0 1.13 1.13L5.2 3.93V12.8a.8.8 0 1 0 1.6 0V3.93l2.83 2.83a.8.8 0 0 0 1.13-1.13L6.57 1.44A.8.8 0 0 0 6 1.2z" />
+                    </svg>
+                  </button>
+                </form>
               </div>
             </div>
-          ))
-        )}
+          )}
+        </main>
 
-        {/* Loading Indicator */}
-        {isLoading && (
-          <div className="message-row assistant">
-            <div className="avatar-badge assistant">AI</div>
-            <div className="message-bubble-wrapper">
-              <div className="message-bubble">
-                <div className="thinking-indicator">
-                  <div className="spinner-dots">
-                    <span />
-                    <span />
-                    <span />
-                  </div>
-                  <span>
-                    Searching 194 vector chunks & synthesizing grounded answer...
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </main>
-
-      {/* Floating Input Dock */}
-      <footer className="input-dock-container">
-        <div className="input-dock-inner">
-          <div className="input-box-wrapper">
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              value={input}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask anything about the company knowledge base (e.g., founder, projects, head office)..."
-              className="chat-input"
-              disabled={isLoading}
-            />
-
-            <button
-              onClick={() => handleSend()}
-              disabled={isLoading || !input.trim()}
-              className="btn-send"
-              aria-label="Send message"
-            >
-              <svg
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M14 5l7 7m0 0l-7 7m7-7H3"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div className="input-dock-footer">
-            <span>
-              Press <strong>Enter ↵</strong> to send • <strong>Shift+Enter</strong> for newline
-            </span>
-            <div className="footer-features">
-              <span className="footer-feature-item">🔒 100% Local Inference</span>
-              <span className="footer-feature-item">•</span>
-              <span className="footer-feature-item">📑 Exact Page Citations</span>
-              <span className="footer-feature-item">•</span>
-              <span className="footer-feature-item">⚡ Zero Hallucinations</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+        {/* MINIMAL FOOTER — EXTRA LOGOS COMPLETELY REMOVED */}
+        <footer className="proof">
+          <p className="by">
+            Agarwal Constructions Knowledge Base · Powered by Local Ollama &amp; ChromaDB
+          </p>
+        </footer>
+      </div>
     </div>
   );
 }
