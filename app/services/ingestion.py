@@ -13,12 +13,49 @@ from app.core.logging import logger
 
 
 def normalize_text(text: str) -> str:
-    """Conservatively normalize text without destroying meaning."""
-    # Replace multiple spaces with a single space
+    """Conservatively normalize text without destroying meaning, rejoining word-per-line PDF extractions."""
+    if not text:
+        return ""
+
+    text = text.replace("\r", "")
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    if not lines:
+        return ""
+
+    avg_words_per_line = sum(len(l.split()) for l in lines) / len(lines)
+
+    # Detect if PDF has the vertical word-by-word fragmentation artifact
+    if avg_words_per_line < 2.5 and len(lines) > 5:
+        tokens = text.split()
+        bullet_chars = {"●", "🔷", "🔶", "📍", "📞", "✉", "•", "▪", "■", "👤"}
+        section_keywords = {
+            "eyebrow:",
+            "headline:",
+            "body copy:",
+            "stat tag:",
+            "footer tags:",
+            "founder",
+            "vision:",
+            "mission:",
+        }
+
+        formatted_chunks = []
+        current_line = []
+        for token in tokens:
+            is_bullet = token in bullet_chars or bool(re.match(r"^\d+\.", token))
+            is_section = token.lower() in section_keywords
+            if (is_bullet or is_section) and current_line:
+                formatted_chunks.append(" ".join(current_line))
+                current_line = [token]
+            else:
+                current_line.append(token)
+        if current_line:
+            formatted_chunks.append(" ".join(current_line))
+        return "\n\n".join(formatted_chunks)
+
+    # Standard normalization for ordinary text
     text = re.sub(r" +", " ", text)
-    # Replace multiple blank lines with a single newline
     text = re.sub(r"\n\s*\n", "\n\n", text)
-    # Strip leading/trailing whitespace
     return text.strip()
 
 

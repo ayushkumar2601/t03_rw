@@ -371,6 +371,15 @@ body::before {
   word-break: break-word;
 }
 
+.bubble-paragraph {
+  margin-bottom: 10px;
+  line-height: 1.65;
+}
+
+.bubble-paragraph:last-child {
+  margin-bottom: 0;
+}
+
 .message-row.user .message-bubble {
   background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   color: #ffffff;

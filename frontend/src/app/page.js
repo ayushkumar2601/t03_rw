@@ -35,6 +35,36 @@ const SUGGESTIONS = [
   },
 ];
 
+function renderFormattedContent(content) {
+  if (!content) return null;
+
+  // Clean any vertical single-word line breaks if present
+  const lines = content
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  let cleaned = content;
+  if (lines.length > 4) {
+    const avgWords =
+      lines.reduce((acc, l) => acc + l.split(/\s+/).length, 0) / lines.length;
+    if (avgWords < 2.5) {
+      cleaned = lines.join(" ");
+    }
+  }
+
+  // Split into paragraphs by double newlines
+  const paragraphs = cleaned.split(/\n\s*\n/).filter((p) => p.trim());
+  if (paragraphs.length <= 1) {
+    return <p className="bubble-paragraph">{cleaned}</p>;
+  }
+
+  return paragraphs.map((para, pIdx) => (
+    <p key={pIdx} className="bubble-paragraph">
+      {para}
+    </p>
+  ));
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -345,7 +375,7 @@ export default function ChatPage() {
 
               <div className="message-bubble-wrapper">
                 <div className="message-bubble">
-                  {msg.content}
+                  {renderFormattedContent(msg.content)}
 
                   {msg.role === "assistant" && (
                     <div className="response-meta-bar">

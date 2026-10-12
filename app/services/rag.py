@@ -70,8 +70,10 @@ def process_chat_request(
         f"Processed RAG query in {duration:.2f}s. Answered with {len(valid_sources)} citations."
     )
 
+    cleaned_answer = clean_answer_text(llm_response.answer)
+
     return ChatResponse(
-        answer=llm_response.answer,
+        answer=cleaned_answer,
         status="answered",
         sources=valid_sources,
         retrieval=RetrievalMetadata(
@@ -79,6 +81,21 @@ def process_chat_request(
             chunks_used=len(valid_sources),  # Used in final answer
         ),
     )
+
+
+def clean_answer_text(text: str) -> str:
+    """Sanitize answer text to eliminate accidental single-word line breaks and ensure fluid paragraphs."""
+    if not text:
+        return text
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    if len(lines) > 4:
+        avg_words = sum(len(l.split()) for l in lines) / len(lines)
+        if avg_words < 2.5:
+            text = " ".join(lines)
+    import re
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
 
 
 def _build_abstain_response(retrieval_result) -> ChatResponse:
