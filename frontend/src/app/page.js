@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 
 export default function FastshotLanding() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -8,6 +9,10 @@ export default function FastshotLanding() {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [expandedSourceIndex, setExpandedSourceIndex] = useState(null);
+
+  const cardRef = useRef(null);
+  const threadRef = useRef(null);
+  const inputBarRef = useRef(null);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -19,6 +24,70 @@ export default function FastshotLanding() {
     const timer = setTimeout(cleanup, 2600);
     return () => clearTimeout(timer);
   }, []);
+
+  // GSAP Graceful Bounce Expanding Animation
+  useEffect(() => {
+    if (isExpanded && cardRef.current) {
+      const isMobile = window.innerWidth <= 600;
+      const targetWidth = isMobile
+        ? Math.min(window.innerWidth - 32, 600)
+        : Math.min(window.innerWidth * 0.95, 980);
+      const targetHeight = isMobile
+        ? Math.min(window.innerHeight * 0.84, 640)
+        : Math.min(window.innerHeight * 0.85, 750);
+      const startWidth = isMobile ? Math.min(window.innerWidth - 32, 516) : 708;
+      const startHeight = 143;
+
+      gsap.fromTo(
+        cardRef.current,
+        {
+          width: startWidth,
+          height: startHeight,
+          borderRadius: 26,
+          scale: 0.94,
+          opacity: 0.92,
+        },
+        {
+          width: targetWidth,
+          height: targetHeight,
+          borderRadius: isMobile ? 22 : 30,
+          scale: 1,
+          opacity: 1,
+          duration: 0.8,
+          ease: "back.out(1.45)", // Graceful bounce effect
+          onComplete: () => {
+            if (cardRef.current) {
+              cardRef.current.style.width = "";
+              cardRef.current.style.height = "";
+            }
+          },
+        }
+      );
+
+      if (threadRef.current) {
+        gsap.fromTo(
+          threadRef.current,
+          { opacity: 0, y: 22 },
+          { opacity: 1, y: 0, duration: 0.45, delay: 0.16, ease: "power2.out" }
+        );
+      }
+
+      if (inputBarRef.current) {
+        gsap.fromTo(
+          inputBarRef.current,
+          { opacity: 0, y: 16, scale: 0.96 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.45,
+            delay: 0.22,
+            ease: "back.out(1.3)",
+          }
+        );
+      }
+    }
+  }, [isExpanded]);
 
   useEffect(() => {
     if (isExpanded) {
@@ -98,13 +167,6 @@ export default function FastshotLanding() {
     }
   };
 
-  const handleReset = () => {
-    setIsExpanded(false);
-    setMessages([]);
-    setInputVal("");
-    setIsLoading(false);
-  };
-
   return (
     <div className="stage">
       <video
@@ -117,105 +179,15 @@ export default function FastshotLanding() {
       />
 
       <div className="frame">
-        <input type="checkbox" id="menu" />
-
-        <header className="nav">
-          <a
-            href="#"
-            className="brand"
-            aria-label="Agarwal Constructions Home"
-            onClick={(e) => {
-              e.preventDefault();
-              handleReset();
-            }}
-          >
-            <svg className="brand-mark" viewBox="0 0 34 34">
-              <circle cx="17" cy="17" r="17" fill="#9C86CE" />
-              <circle cx="17" cy="17" r="8.6" fill="#FFFFFF" />
-              <circle cx="17" cy="17" r="3.7" fill="#151519" />
-            </svg>
-            <span className="brand-text">Agarwal Constructions</span>
-          </a>
-
-          <nav className="links">
-            <a href="#" className="nav-link nav-link-1">
-              Company Profile
-            </a>
-            <a href="#" className="nav-link nav-link-2">
-              Knowledge Base
-            </a>
-            <a href="#" className="nav-link nav-link-3">
-              RAG Architecture
-            </a>
-            <a href="#" className="nav-link nav-link-4">
-              API Docs
-            </a>
-          </nav>
-
-          <a
-            href="#"
-            className="cta"
-            onClick={(e) => {
-              e.preventDefault();
-              handleSend("Give me an overview of Agarwal Constructions.");
-            }}
-          >
-            <span>Live RAG</span>
-          </a>
-
-          <label htmlFor="menu" className="burger" aria-label="Toggle menu">
-            <svg
-              viewBox="0 0 17 12"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            >
-              <line x1="0" y1="2" x2="17" y2="2" />
-              <line x1="0" y1="10" x2="17" y2="10" />
-            </svg>
-          </label>
-        </header>
-
-        <div className="sheet">
-          <div className="sheet-inner">
-            <div className="sheet-panel">
-              <a href="#" className="sheet-link">
-                Company Profile
-              </a>
-              <a href="#" className="sheet-link">
-                Knowledge Base
-              </a>
-              <a href="#" className="sheet-link">
-                RAG Architecture
-              </a>
-              <a href="#" className="sheet-link">
-                API Docs
-              </a>
-              <a
-                href="#"
-                className="sheet-cta"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSend("Give me an overview of Agarwal Constructions.");
-                }}
-              >
-                Live RAG
-              </a>
-            </div>
-          </div>
-        </div>
-
         <main className={`hero ${isExpanded ? "has-expanded" : ""}`}>
-          <h1 className="h1">
-            {isExpanded
-              ? "Agarwal Constructions Knowledge Assistant"
-              : "Ask anything about Agarwal Constructions."}
-          </h1>
+          {!isExpanded && (
+            <h1 className="h1">Ask anything about Agarwal Constructions.</h1>
+          )}
 
           {!isExpanded ? (
-            /* COLLAPSED INITIAL COMPOSER CARD (DESKTOP ABSOLUTE COORDINATES) */
+            /* COLLAPSED INITIAL COMPOSER CARD */
             <form
+              ref={cardRef}
               className="card"
               onSubmit={(e) => {
                 e.preventDefault();
@@ -341,33 +313,9 @@ export default function FastshotLanding() {
               </div>
             </form>
           ) : (
-            /* EXPANDED CHAT BOX (PERSISTENT SIZE & UI FOR ALL SUBSEQUENT PROMPTS) */
-            <div className="card expanded">
-              <div className="chat-topbar">
-                <div className="chat-meta">
-                  <div className="chat-orb" />
-                  <div className="chat-title-group">
-                    <span className="chat-title">
-                      Agarwal Constructions Knowledge Base
-                    </span>
-                    <span className="chat-badge">
-                      Grounded Vector Retrieval · Local Ollama Llama 3
-                    </span>
-                  </div>
-                </div>
-                <div className="chat-actions">
-                  <button
-                    type="button"
-                    className="btn-reset"
-                    onClick={handleReset}
-                    title="Start a new conversation"
-                  >
-                    + New Query
-                  </button>
-                </div>
-              </div>
-
-              <div className="chat-thread">
+            /* EXPANDED CHAT BOX (WITH GSAP BOUNCE ANIMATION, NO TOPBAR, NO MIC) */
+            <div ref={cardRef} className="card expanded">
+              <div ref={threadRef} className="chat-thread">
                 {messages.map((m, idx) => {
                   if (m.sender === "user") {
                     return (
@@ -463,8 +411,8 @@ export default function FastshotLanding() {
                 <div ref={chatEndRef} />
               </div>
 
-              {/* BOTTOM INPUT BAR (WHITE PILL DESIGN MATCHING ATTACHED SCREENSHOT) */}
-              <div className="chat-input-bar-container">
+              {/* BOTTOM INPUT BAR */}
+              <div ref={inputBarRef} className="chat-input-bar-container">
                 <form
                   className="chat-input-pill"
                   onSubmit={(e) => {
@@ -482,35 +430,6 @@ export default function FastshotLanding() {
                     disabled={isLoading}
                     autoFocus
                   />
-
-                  <button
-                    type="button"
-                    className="pill-mic-btn"
-                    title="Voice input"
-                    onClick={() => {
-                      if (!inputVal) {
-                        setInputVal(
-                          "Who is the current CEO and management team of Agarwal Constructions?"
-                        );
-                      }
-                    }}
-                  >
-                    <svg
-                      viewBox="0 0 24 24"
-                      width="18"
-                      height="18"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-                      <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                      <line x1="12" y1="19" x2="12" y2="23" />
-                      <line x1="8" y1="23" x2="16" y2="23" />
-                    </svg>
-                  </button>
 
                   <button
                     type="submit"
@@ -531,13 +450,6 @@ export default function FastshotLanding() {
             </div>
           )}
         </main>
-
-        {/* MINIMAL FOOTER — EXTRA LOGOS COMPLETELY REMOVED */}
-        <footer className="proof">
-          <p className="by">
-            Agarwal Constructions Knowledge Base · Powered by Local Ollama &amp; ChromaDB
-          </p>
-        </footer>
       </div>
     </div>
   );
