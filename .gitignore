@@ -25,6 +25,11 @@ htmlcov/
 chroma_db/
 !data/source/knowledge_base.pdf
 
+# Frontend artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
 # OS generated files
 .DS_Store
 .DS_Store?
