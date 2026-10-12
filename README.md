@@ -72,9 +72,18 @@ python -m scripts.ingest --rebuild
 
 Run the FastAPI server with hot-reload:
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --reload
 ```
 Access the interactive Swagger UI at: **http://127.0.0.1:8000/docs**
+
+### 3. Starting the Next.js Frontend
+
+Run the Next.js single-page chat interface:
+```bash
+cd frontend
+npm run dev
+```
+Open **http://localhost:3000** in your browser to type custom questions and view grounded answers with document citations.
 
 ### API Endpoints
 
