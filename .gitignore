@@ -23,8 +23,7 @@ htmlcov/
 
 # Data and databases
 chroma_db/
-data/source/*.pdf
-!data/source/.gitkeep
+!data/source/knowledge_base.pdf
 
 # OS generated files
 .DS_Store

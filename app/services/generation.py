@@ -1,8 +1,8 @@
 import os
 from typing import Any, Dict, List
 
+from langchain_core.language_models import BaseChatModel
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq
 from pydantic import BaseModel, Field
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -26,20 +26,53 @@ class LLMResponse(BaseModel):
 _llm_instance = None
 
 
-def get_llm() -> ChatGroq:
-    """Initialize and reuse the Groq LLM client."""
+def get_llm() -> BaseChatModel:
+    """Initialize and reuse the LLM client (Ollama or Groq)."""
     global _llm_instance
-    if _llm_instance is None:
+    if _llm_instance is not None:
+        return _llm_instance
+
+    provider = (settings.llm_provider or "ollama").strip().lower()
+
+    if provider == "ollama":
+        try:
+            from langchain_ollama import ChatOllama
+
+            _llm_instance = ChatOllama(
+                base_url=settings.ollama_base_url,
+                model=settings.ollama_model,
+                temperature=settings.llm_temperature,
+            )
+            logger.info(
+                f"Initialized Ollama client (model={settings.ollama_model}, url={settings.ollama_base_url})"
+            )
+        except Exception as e:
+            logger.error(f"Failed to initialize Ollama client: {e}")
+            raise LLMProviderError(f"Failed to initialize Ollama client: {e}") from e
+    elif provider == "groq":
         if not settings.groq_api_key:
             logger.warning("GROQ_API_KEY is not set.")
+            raise LLMProviderError(
+                "GROQ_API_KEY is not configured. Please set GROQ_API_KEY in your environment or .env file."
+            )
+        try:
+            from langchain_groq import ChatGroq
 
-        _llm_instance = ChatGroq(
-            api_key=settings.groq_api_key,
-            model_name=settings.groq_model,
-            temperature=settings.llm_temperature,
-            timeout=settings.llm_timeout_seconds,
-            max_retries=settings.llm_max_retries,
+            _llm_instance = ChatGroq(
+                api_key=settings.groq_api_key,
+                model_name=settings.groq_model,
+                temperature=settings.llm_temperature,
+                timeout=settings.llm_timeout_seconds,
+                max_retries=settings.llm_max_retries,
+            )
+            logger.info(f"Initialized Groq client (model={settings.groq_model})")
+        except Exception as e:
+            raise LLMProviderError(f"Failed to initialize Groq client: {e}") from e
+    else:
+        raise LLMProviderError(
+            f"Unsupported LLM_PROVIDER '{provider}'. Allowed values: 'ollama', 'groq'."
         )
+
     return _llm_instance
 
 
@@ -58,12 +91,20 @@ def build_context_string(selected_chunks: List[Dict[str, Any]]) -> str:
     return "\n\n".join(context_parts)
 
 
-@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    reraise=True,
+)
+def _invoke_chain_with_retry(chain, inputs: Dict[str, Any]) -> LLMResponse:
+    return chain.invoke(inputs)
+
+
 def generate_grounded_answer(
     question: str, selected_chunks: List[Dict[str, Any]]
 ) -> LLMResponse:
     """
-    Generate an answer using Groq with structured output.
+    Generate an answer using the configured LLM with structured output.
     Retries on transient failures.
     """
     llm = get_llm()
@@ -84,8 +125,10 @@ def generate_grounded_answer(
     chain = prompt | structured_llm
 
     try:
-        result = chain.invoke({"context": context_str, "question": question})
+        result = _invoke_chain_with_retry(chain, {"context": context_str, "question": question})
         return result
+    except LLMProviderError:
+        raise
     except Exception as e:
         logger.error(f"Error during LLM generation: {e}")
         raise LLMProviderError(

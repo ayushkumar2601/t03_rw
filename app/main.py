@@ -30,5 +30,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+app.state.vector_store = None
 
 app.include_router(router)

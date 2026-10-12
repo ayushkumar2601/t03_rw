@@ -1,70 +1,104 @@
 [
   {
     "id": "Q001",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Rajesh Agarwal",
+    "sources_count": 1
   },
   {
     "id": "Q002",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "1995",
+    "sources_count": 1
   },
   {
     "id": "Q003",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "\u20b960,000",
+    "sources_count": 2
   },
   {
     "id": "Q004",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Kolkata HQ: Central Tower, 277 BB Ganguly Street, Kolkata \u2013 700012",
+    "sources_count": 1
   },
   {
     "id": "Q005",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "+91-9674973514",
+    "sources_count": 1
   },
   {
     "id": "Q006",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "The company's vision regarding expansion is to deliver high-quality developments that support regional economic growth and infrastructure development, as stated in the 'Tripura' section of the document. Additionally, the company is preparing for pan-India expansion, as mentioned in the 'Future Expansion' section, with a strong foundation and proven execution track record. The company's growth is structured, with established systems, in-house expertise, and strong operational frameworks, enabling it to scale across geographies while maintaining consistency in quality, timelines, and execution.",
+    "sources_count": 3
   },
   {
     "id": "Q007",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Yes",
+    "sources_count": 2
   },
   {
     "id": "Q008",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Kolkata",
+    "sources_count": 1
   },
   {
     "id": "Q009",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Rajesh Agarwal",
+    "sources_count": 3
   },
   {
     "id": "Q010",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Yes",
+    "sources_count": 2
   },
   {
     "id": "Q011",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "Yes, you can contact the head office via email. The email address is agarwalconstructionsco@gmail.com.",
+    "sources_count": 1
   },
   {
     "id": "Q012",
-    "status": "pending_generation"
+    "status": "answered",
+    "answer": "With just \u20b960,000 and a vision to build differently, Mr. Rajesh Agarwal started what would become one of the most trusted construction and development companies in Eastern India.",
+    "sources_count": 2
   },
   {
     "id": "Q013",
-    "status": "pending_generation"
+    "status": "insufficient_evidence",
+    "answer": "I couldn't find sufficient information about that in the provided knowledge-base document.",
+    "sources_count": 0
   },
   {
     "id": "Q014",
-    "status": "pending_generation"
+    "status": "insufficient_evidence",
+    "answer": "I couldn't find sufficient information about that in the provided knowledge-base document.",
+    "sources_count": 0
   },
   {
     "id": "Q015",
-    "status": "pending_generation"
+    "status": "insufficient_evidence",
+    "answer": "I couldn't find sufficient information about that in the provided knowledge-base document.",
+    "sources_count": 0
   },
   {
     "id": "Q016",
-    "status": "pending_generation"
+    "status": "insufficient_evidence",
+    "answer": "I couldn't find sufficient information about that in the provided knowledge-base document.",
+    "sources_count": 0
   },
   {
     "id": "Q017",
-    "status": "pending_generation"
+    "status": "insufficient_evidence",
+    "answer": "I couldn't find sufficient information about that in the provided knowledge-base document.",
+    "sources_count": 0
   }
 ]

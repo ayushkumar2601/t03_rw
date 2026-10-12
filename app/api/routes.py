@@ -9,7 +9,7 @@ router = APIRouter()
 
 def get_vector_store(request: Request):
     """Dependency to retrieve vector store from app state."""
-    vs = request.app.state.vector_store
+    vs = getattr(request.app.state, "vector_store", None)
     if not vs:
         raise HTTPException(status_code=503, detail="Knowledge base not initialized.")
     return vs
@@ -39,7 +39,7 @@ def health_endpoint():
 
 @router.get("/ready")
 def ready_endpoint(request: Request):
-    vs = request.app.state.vector_store
+    vs = getattr(request.app.state, "vector_store", None)
     if not vs:
         return {
             "status": "not_ready",

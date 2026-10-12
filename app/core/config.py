@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     chunk_size: int = 1000
     chunk_overlap: int = 150
 
+    llm_provider: str = "ollama"  # "ollama" or "groq"
+    ollama_base_url: str = "http://localhost:11434"
+    ollama_model: str = "llama3"
+
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
     retrieval_top_k: int = 5
@@ -22,7 +26,7 @@ class Settings(BaseSettings):
     max_question_length: int = 2000
     llm_temperature: float = 0.0
     llm_max_retries: int = 2
-    llm_timeout_seconds: int = 30
+    llm_timeout_seconds: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"

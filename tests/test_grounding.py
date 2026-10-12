@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from app.schemas.chat import ChatRequest
 from app.services.generation import LLMResponse
 from app.services.rag import process_chat_request
@@ -79,3 +81,30 @@ def test_process_chat_request_invalid_citation_rejected(mock_retrieve, mock_gene
 
     assert response.status == "insufficient_evidence"
     assert len(response.sources) == 0
+
+
+def test_get_llm_ollama():
+    import app.services.generation as gen
+
+    gen._llm_instance = None
+    with patch.object(gen.settings, "llm_provider", "ollama"):
+        with patch("langchain_ollama.ChatOllama") as mock_ollama:
+            mock_ollama.return_value = MagicMock()
+            llm = gen.get_llm()
+            assert llm is not None
+            mock_ollama.assert_called_once()
+    gen._llm_instance = None
+
+
+def test_get_llm_groq_missing_key():
+    import app.services.generation as gen
+    from app.core.exceptions import LLMProviderError
+
+    gen._llm_instance = None
+    with patch.object(gen.settings, "llm_provider", "groq"):
+        with patch.object(gen.settings, "groq_api_key", ""):
+            with pytest.raises(
+                LLMProviderError, match="GROQ_API_KEY is not configured"
+            ):
+                gen.get_llm()
+    gen._llm_instance = None
