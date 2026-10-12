@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from app.core.config import settings
 from app.core.exceptions import KnowledgeBaseNotReadyError, LLMProviderError
 from app.schemas.chat import ChatRequest, ChatResponse
 from app.services.rag import process_chat_request
@@ -40,12 +41,19 @@ def health_endpoint():
 @router.get("/ready")
 def ready_endpoint(request: Request):
     vs = getattr(request.app.state, "vector_store", None)
+    llm_model = (
+        settings.ollama_model
+        if settings.llm_provider == "ollama"
+        else settings.groq_model
+    )
     if not vs:
         return {
             "status": "not_ready",
             "vector_store_initialized": False,
             "collection_exists": False,
             "indexed_chunks": 0,
+            "llm_provider": settings.llm_provider,
+            "llm_model": llm_model,
         }
 
     try:
@@ -55,6 +63,8 @@ def ready_endpoint(request: Request):
             "vector_store_initialized": True,
             "collection_exists": True,
             "indexed_chunks": count,
+            "llm_provider": settings.llm_provider,
+            "llm_model": llm_model,
         }
     except Exception:
         return {
@@ -62,4 +72,6 @@ def ready_endpoint(request: Request):
             "vector_store_initialized": True,
             "collection_exists": False,
             "indexed_chunks": 0,
+            "llm_provider": settings.llm_provider,
+            "llm_model": llm_model,
         }
