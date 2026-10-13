@@ -18,11 +18,11 @@ def normalize_text(text: str) -> str:
         return ""
 
     text = text.replace("\r", "")
-    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
     if not lines:
         return ""
 
-    avg_words_per_line = sum(len(l.split()) for l in lines) / len(lines)
+    avg_words_per_line = sum(len(line.split()) for line in lines) / len(lines)
 
     # Detect if PDF has the vertical word-by-word fragmentation artifact
     if avg_words_per_line < 2.5 and len(lines) > 5:

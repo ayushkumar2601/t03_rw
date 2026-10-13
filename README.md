@@ -61,11 +61,13 @@ It ingests a company knowledge base PDF and answers user questions strictly base
 
 To parse, chunk, and index the PDF into ChromaDB:
 ```bash
+python ingest.py
+# or
 python -m scripts.ingest
 ```
 Use `--rebuild` to wipe the existing vector collection and reindex from scratch:
 ```bash
-python -m scripts.ingest --rebuild
+python ingest.py --rebuild
 ```
 
 ### 2. Starting the API
@@ -129,7 +131,7 @@ Run the test suite (100% mocked, runs in <2 seconds without external API calls):
 ```bash
 pytest
 ```
-*Result: 27 passed.*
+*Result: 29 passed.*
 
 ### Real-Document Evaluation Benchmark
 Run the end-to-end evaluation benchmark over the 17-question dataset (`evaluation/questions.json`):

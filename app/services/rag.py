@@ -1,3 +1,4 @@
+import re
 import time
 
 from app.core.logging import logger
@@ -117,12 +118,11 @@ def clean_answer_text(text: str) -> str:
     """Sanitize answer text to eliminate accidental single-word line breaks and ensure fluid paragraphs."""
     if not text:
         return text
-    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    lines = [line.strip() for line in text.split("\n") if line.strip()]
     if len(lines) > 4:
-        avg_words = sum(len(l.split()) for l in lines) / len(lines)
+        avg_words = sum(len(line.split()) for line in lines) / len(lines)
         if avg_words < 2.5:
             text = " ".join(lines)
-    import re
     text = re.sub(r"[ \t]+", " ", text)
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
