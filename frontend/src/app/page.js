@@ -17,12 +17,21 @@ export default function FastshotLanding() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    const cleanup = () => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: no-preference)").matches
+    ) {
+      document.documentElement.classList.add("anim");
+    }
+
+    const timer = setTimeout(() => {
+      document.documentElement.classList.remove("anim");
+    }, 2600);
+
+    return () => {
+      clearTimeout(timer);
       document.documentElement.classList.remove("anim");
     };
-
-    const timer = setTimeout(cleanup, 2600);
-    return () => clearTimeout(timer);
   }, []);
 
   // GSAP Graceful Bounce Expanding Animation

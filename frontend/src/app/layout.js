@@ -21,14 +21,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if(window.matchMedia('(prefers-reduced-motion: no-preference)').matches){document.documentElement.classList.add('anim');}`,
-          }}
-        />
-      </head>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <body>{children}</body>
     </html>
   );
