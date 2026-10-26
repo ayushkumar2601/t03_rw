@@ -3,7 +3,7 @@
     "id": "Q001",
     "status": "answered",
     "answer": "Rajesh Agarwal",
-    "sources_count": 1
+    "sources_count": 2
   },
   {
     "id": "Q002",
@@ -14,37 +14,37 @@
   {
     "id": "Q003",
     "status": "answered",
-    "answer": "\u20b960,000",
+    "answer": "The initial investment amount used to start the company was \u20b960,000, as mentioned in the context.",
     "sources_count": 2
   },
   {
     "id": "Q004",
     "status": "answered",
-    "answer": "Kolkata HQ: Central Tower, 277 BB Ganguly Street, Kolkata \u2013 700012",
-    "sources_count": 1
+    "answer": "The head office address of Agarwal Constructions is Kolkata HQ: Central Tower, 277 BB Ganguly Street, Kolkata \u2013 700012.",
+    "sources_count": 2
   },
   {
     "id": "Q005",
     "status": "answered",
-    "answer": "+91-9674973514",
-    "sources_count": 1
+    "answer": "The contact phone number for Agarwal Constructions is +91-9674973514, as mentioned in the document context.",
+    "sources_count": 2
   },
   {
     "id": "Q006",
     "status": "answered",
-    "answer": "The company's vision regarding expansion is to deliver high-quality developments that support regional economic growth and infrastructure development, as stated in the 'Tripura' section of the document. Additionally, the company is preparing for pan-India expansion, as mentioned in the 'Future Expansion' section, with a strong foundation and proven execution track record. The company's growth is structured, with established systems, in-house expertise, and strong operational frameworks, enabling it to scale across geographies while maintaining consistency in quality, timelines, and execution.",
+    "answer": "The company's vision regarding expansion is to bring its expertise in commercial real estate development to emerging markets with strong growth potential. As part of its expansion strategy, the company is actively building its presence in Tripura, with a focus on delivering high-quality developments that support regional economic growth and infrastructure development. Additionally, the company is preparing for pan-India expansion, with a pipeline of upcoming projects and strategic partnerships positioning it as a scalable commercial real estate developer in India.",
     "sources_count": 3
   },
   {
     "id": "Q007",
     "status": "answered",
-    "answer": "Yes",
-    "sources_count": 2
+    "answer": "Yes, the company develops large-scale infrastructure. According to the provided context, the company operates as an institutional commercial infrastructure development company capable of mobilizing skilled industrial workforce at scale, heavy machinery for large-format developments, and in-house engineering teams for multi-disciplinary coordination. This allows them to execute even the most complex industrial builds without dependency on fragmented subcontracting ecosystems.",
+    "sources_count": 1
   },
   {
     "id": "Q008",
     "status": "answered",
-    "answer": "Kolkata",
+    "answer": "The company's main headquarters is located at Kolkata HQ: Central Tower, 277 BB Ganguly Street, Kolkata \u2013 700012.",
     "sources_count": 1
   },
   {
@@ -56,8 +56,8 @@
   {
     "id": "Q010",
     "status": "answered",
-    "answer": "Yes",
-    "sources_count": 2
+    "answer": "Yes, the phone number +91 9674973514 is associated with the head office, as it is listed under the 'Head Office Details' section in the provided context.",
+    "sources_count": 1
   },
   {
     "id": "Q011",
@@ -68,8 +68,8 @@
   {
     "id": "Q012",
     "status": "answered",
-    "answer": "With just \u20b960,000 and a vision to build differently, Mr. Rajesh Agarwal started what would become one of the most trusted construction and development companies in Eastern India.",
-    "sources_count": 2
+    "answer": "Rajesh Agarwal founded Agarwal Constructions Co. in 1995 with a vision rooted in honesty, discipline, and long-term credibility, starting with just \u20b960,000. This marked the beginning of the company's journey, which would eventually lead to becoming one of the most trusted developers in Eastern India, delivering over 500 projects.",
+    "sources_count": 1
   },
   {
     "id": "Q013",
@@ -79,9 +79,9 @@
   },
   {
     "id": "Q014",
-    "status": "insufficient_evidence",
-    "answer": "I couldn't find sufficient information about that in the provided knowledge-base document.",
-    "sources_count": 0
+    "status": "answered",
+    "answer": "Aditya Agarwal",
+    "sources_count": 1
   },
   {
     "id": "Q015",

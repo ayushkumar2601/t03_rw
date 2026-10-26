@@ -70,22 +70,33 @@ Use `--rebuild` to wipe the existing vector collection and reindex from scratch:
 python ingest.py --rebuild
 ```
 
-### 2. Starting the API
+### 2. Running Both Frontend & Backend (Recommended)
 
-Run the FastAPI server with hot-reload:
+Run both the FastAPI backend and Next.js frontend concurrently with a single command:
+```bash
+python run.py
+# or
+./run.sh
+```
+- **Web App**: http://localhost:3000
+- **API & Docs**: http://127.0.0.1:8000/docs
+
+Press `Ctrl+C` in that terminal to cleanly stop both services at once.
+
+### 3. Running Services Separately (Optional)
+
+**FastAPI Server**:
 ```bash
 uvicorn main:app --reload
 ```
-Access the interactive Swagger UI at: **http://127.0.0.1:8000/docs**
+Interactive Swagger UI: **http://127.0.0.1:8000/docs**
 
-### 3. Starting the Next.js Frontend
-
-Run the Next.js single-page chat interface:
+**Next.js Frontend**:
 ```bash
 cd frontend
 npm run dev
 ```
-Open **http://localhost:3000** in your browser to type custom questions and view grounded answers with document citations.
+Open **http://localhost:3000** in your browser.
 
 ### API Endpoints
 
